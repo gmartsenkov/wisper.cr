@@ -35,8 +35,8 @@ Spectator.describe Wisper do
 
       User::Create::GlobalListeners.listen(
         User::Create::Success, ->(_user : User::Create::Success) {
-          called = 1
-        }
+        called = 1
+      }
       )
 
       service.broadcast(User::Create::Failure.new(reason: "Some reason"))

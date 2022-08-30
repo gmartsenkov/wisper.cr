@@ -29,7 +29,7 @@ module Wisper
         (@subscriptions_for_{{event_name}} + GlobalListeners.subscriptions_for_{{event_name}}).each { |handler| handler.call(e) }
       end
 
-    {%end%}
+    {% end %}
 
     module GlobalListeners
       {% for event in Events.all_subclasses %}
@@ -49,7 +49,7 @@ module Wisper
         def self.subscriptions_for_{{event_name}}
           @@subscriptions_for_{{event_name}}
         end
-      {%end%}
+      {% end %}
     end
   end
 
@@ -66,7 +66,9 @@ module Wisper
       {% end %}
 
 
-      def initialize({{*properties.map do |field| "@#{field.id}".id end}})
+      def initialize({{*properties.map do |field|
+                         "@#{field.id}".id
+                       end}})
       end
     end
   end
