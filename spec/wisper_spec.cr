@@ -11,6 +11,14 @@ class Test
   end
 end
 
+class Emails
+  Test::GlobalListeners.listen(Test::CreateUser, ->welcome_email(Test::CreateUser))
+
+  def self.welcome_email(e : Test::CreateUser)
+    puts "Welcome email"
+  end
+end
+
 x = Test.new
 x.on(Test::CreateUser) do |user|
   puts user

@@ -19,9 +19,26 @@ module Wisper
       end
 
       def broadcast(e : {{event}})
-        @subscriptions_for_{{event_name}}.each { |handler| handler.call(e) }
+        (@subscriptions_for_{{event_name}} + GlobalListeners.subscriptions_for_{{event_name}}).each { |handler| handler.call(e) }
       end
+
     {%end%}
+
+    module GlobalListeners
+      {% for event in Events.all_subclasses %}
+        {% event_name = event.stringify.underscore.gsub(/::/, "_").id %}
+
+        @@subscriptions_for_{{event_name}} = Array(Proc({{event}}, Nil)).new
+
+        def self.listen(e : {{event.class}}, handler : Proc({{event}}, Nil))
+          @@subscriptions_for_{{event_name}}.push(handler)
+        end
+
+        def self.subscriptions_for_{{event_name}}
+          @@subscriptions_for_{{event_name}}
+        end
+      {%end%}
+    end
   end
 
   macro event(struct_name)
