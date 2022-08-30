@@ -1,10 +1,64 @@
 # wisper
 
-TODO: Write a description here
+Minimalistic library to help decouple business concernes using Pub-Sub style. 
+- Subscriptions are just callbacks executed when the particular event is emitted
+- Local and global subscriptions
+- Synchronous and asynchronous subscriptions
+
+## Installation
+
+1. Add the dependency to your `shard.yml`:
+
+   ```yaml
+   dependencies:
+     wisper:
+       github: gmartsenkov/wisper
+   ```
+
+2. Run `shards install`
 
 ## Usage
 
+To use Wisper simply include it in your class. Since crystal is strictly typed language we'll have to define the possible events that can be broadcasted using the `event` macro which just creates a simple class with the defined properties. 
 ```crystal
+class User::Create
+  include Wisper
+
+  event Success, name : String, age : Int32
+  event Failure, reason : String
+end
+```
+Once events are defined we can broadcast them using `#broadcast` -
+```crystal
+broadcast(Success.new("Jon", 20))
+```
+To subscribe to these events the `#on` can be used -
+``` crystal
+service = User::Create.new
+service.on(User::Create::Success) do
+  puts success.name
+end
+```
+Chaining `#on` is also possible -
+``` crystal
+User::Create.new
+  .on(User::Create::Success) {|success| puts success.name }
+  .on(User::Create::Failure) {|failure| puts failure.reason }
+```
+Sometimes it's usefull to define global subscriptions, for example every time when a new user is successfuly created we want to send out an email
+
+``` crystal
+class Emails
+  User::Create::GlobalListeners.listen(User::Create::Success, ->welcome_email(User::Create::Success))
+
+  def self.welcome_email(success : User::Create::Success)
+    # Send email logic
+  end
+```
+NOTE: The local listener callbacks are executed before the global ones.
+
+Full example -
+``` crystal
 class User::Create
   include Wisper
 
@@ -25,49 +79,11 @@ class User::Create
   end
 end
 
-class Emails
-  User::Create::GlobalListeners.listen(User::Create::Success, ->welcome_email(User::Create::Success))
-
-  def self.welcome_email(e : User::Create::Success)
-  end
-end
-
-User::Create.new(18).tap do |so|
-  so.on(User::Create::Success) do |success|
-    puts success.name
-  end
-
-  so.on(User::Create::Failure) do |failure|
-    puts failure.reason
-  end
-
-  so.call
-end
+User::Create.new(age: 18)
+  .on(User::Create::Success) { |success| puts success.name }
+  .on(User::Create::Failure) { |failure| puts failure.reason }
+  .call
 ```
-
-## Installation
-
-1. Add the dependency to your `shard.yml`:
-
-   ```yaml
-   dependencies:
-     wisper:
-       github: your-github-user/wisper
-   ```
-
-2. Run `shards install`
-
-## Usage
-
-```crystal
-require "wisper"
-```
-
-TODO: Write usage instructions here
-
-## Development
-
-TODO: Write development instructions here
 
 ## Contributing
 
@@ -79,4 +95,4 @@ TODO: Write development instructions here
 
 ## Contributors
 
-- [Georgi Martsenkov](https://github.com/your-github-user) - creator and maintainer
+- [Georgi Martsenkov](https://github.com/gmartsenkov) - creator and maintainer

@@ -19,10 +19,3 @@ class User::Create
     broadcast(Failure.new(reason: "Underaged"))
   end
 end
-
-class Emails
-  User::Create::GlobalListeners.listen(User::Create::Success, ->welcome_email(User::Create::Success))
-
-  def self.welcome_email(e : User::Create::Success)
-  end
-end

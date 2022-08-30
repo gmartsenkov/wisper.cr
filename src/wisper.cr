@@ -16,6 +16,8 @@ module Wisper
 
       def on(e : {{event.class}}, &block : {{event}} -> Nil)
         @subscriptions_for_{{event_name}}.push(block)
+
+        return self
       end
 
       def broadcast(e : {{event}})
