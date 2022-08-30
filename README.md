@@ -35,14 +35,14 @@ broadcast(Success.new("Jon", 20))
 To subscribe to these events the `#on` can be used -
 ``` crystal
 service = User::Create.new
-service.on(User::Create::Success) do
+service.on(User::Create::Success) do |success|
   puts success.name
 end
 ```
 Async subscriptions, which runs the block in a fiber - 
 ``` crystal
 service = User::Create.new
-service.on(User::Create::Success, async: true) do
+service.on(User::Create::Success, async: true) do |success|
   puts success.name
 end
 ```
@@ -52,7 +52,7 @@ User::Create.new
   .on(User::Create::Success) {|success| puts success.name }
   .on(User::Create::Failure) {|failure| puts failure.reason }
 ```
-Sometimes it's usefull to define global subscriptions, for example every time when a new user is successfuly created we want to send out an email
+Sometimes it's usefull to define global subscriptions, for example every time when a new user is successfuly created we want to send out an email -
 ``` crystal
 class Emails
   User::Create::GlobalListeners.listen(User::Create::Success, ->welcome_email(User::Create::Success))
@@ -61,13 +61,12 @@ class Emails
     # Send email logic
   end
 ```
-Also can be run in asynchronously
-
+Also can be run in asynchronously -
 ``` crystal
 User::Create::GlobalListeners.listen(User::Create::Success, ->welcome_email(User::Create::Success, async: true))
 ```
 
-NOTE: The local listener callbacks are executed before the global ones.
+NOTE: The local subscription callbacks are executed before the global ones.
 
 Full example -
 ``` crystal
@@ -99,7 +98,7 @@ User::Create.new(age: 18)
 
 ## Contributing
 
-1. Fork it (<https://github.com/your-github-user/wisper/fork>)
+1. Fork it (<https://github.com/gmartsenkov/wisper/fork>)
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
