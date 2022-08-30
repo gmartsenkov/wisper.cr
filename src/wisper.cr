@@ -14,8 +14,13 @@ module Wisper
 
       @subscriptions_for_{{event_name}} = Array(Proc({{event}}, Nil)).new
 
-      def on(e : {{event.class}}, &block : {{event}} -> Nil)
-        @subscriptions_for_{{event_name}}.push(block)
+      def on(e : {{event.class}}, async = false, &block : {{event}} -> Nil)
+        if async
+          @subscriptions_for_{{event_name}}
+            .push(->(e : {{event}}) { spawn { block.call(e) } })
+        else
+          @subscriptions_for_{{event_name}}.push(block)
+        end
 
         return self
       end
@@ -32,8 +37,13 @@ module Wisper
 
         @@subscriptions_for_{{event_name}} = Array(Proc({{event}}, Nil)).new
 
-        def self.listen(e : {{event.class}}, handler : Proc({{event}}, Nil))
-          @@subscriptions_for_{{event_name}}.push(handler)
+        def self.listen(e : {{event.class}}, handler : Proc({{event}}, Nil), async = false)
+          if async
+            @@subscriptions_for_{{event_name}}
+              .push(->(e : {{event}}) { spawn { handler.call(e) } })
+          else
+            @@subscriptions_for_{{event_name}}.push(handler)
+          end
         end
 
         def self.subscriptions_for_{{event_name}}

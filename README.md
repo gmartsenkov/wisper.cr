@@ -39,6 +39,13 @@ service.on(User::Create::Success) do
   puts success.name
 end
 ```
+Async subscriptions, which runs the block in a fiber - 
+``` crystal
+service = User::Create.new
+service.on(User::Create::Success, async: true) do
+  puts success.name
+end
+```
 Chaining `#on` is also possible -
 ``` crystal
 User::Create.new
@@ -46,7 +53,6 @@ User::Create.new
   .on(User::Create::Failure) {|failure| puts failure.reason }
 ```
 Sometimes it's usefull to define global subscriptions, for example every time when a new user is successfuly created we want to send out an email
-
 ``` crystal
 class Emails
   User::Create::GlobalListeners.listen(User::Create::Success, ->welcome_email(User::Create::Success))
@@ -55,6 +61,12 @@ class Emails
     # Send email logic
   end
 ```
+Also can be run in asynchronously
+
+``` crystal
+User::Create::GlobalListeners.listen(User::Create::Success, ->welcome_email(User::Create::Success, async: true))
+```
+
 NOTE: The local listener callbacks are executed before the global ones.
 
 Full example -
