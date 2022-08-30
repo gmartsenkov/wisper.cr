@@ -1,2 +1,3 @@
-require "spec"
-require "../src/wisper"
+require "../src/*"
+require "./support/*"
+require "spectator"

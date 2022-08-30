@@ -41,11 +41,20 @@ module Wisper
     end
   end
 
-  macro event(struct_name)
+  macro event(struct_name, *properties)
     class {{struct_name}} < Events
-      property x, y
+      {% for property in properties %}
+        {% if property.is_a?(Assign) %}
+          getter {{property.target.id}}
+        {% elsif property.is_a?(TypeDeclaration) %}
+          getter {{property.var}} : {{property.type}}
+        {% else %}
+          getter :{{property.id}}
+        {% end %}
+      {% end %}
 
-      def initialize(@x : Int32, @y : Int32)
+
+      def initialize({{*properties.map do |field| "@#{field.id}".id end}})
       end
     end
   end

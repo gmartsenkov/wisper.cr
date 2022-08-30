@@ -1,34 +1,49 @@
 require "./spec_helper"
 
-class Test
-  include Wisper
+Spectator.describe Wisper do
+  describe "#on" do
+    it "calls the correct subscription" do
+      service = User::Create.new(17)
 
-  event CreateUser
-  event DeleteUser
+      service.on(User::Create::Failure) do |failure|
+        expect(failure.reason).to eq "Underaged"
+      end
 
-  def call
-    broadcast(CreateUser.new(1, 2))
+      service.call
+    end
+
+    it "works for another event" do
+      service = User::Create.new(18)
+
+      service.on(User::Create::Failure) do |failure|
+        expect(true).to be false
+      end
+
+      service.on(User::Create::Success) do |success|
+        expect(success.age).to eq 18
+        expect(success.name).to eq "Jon"
+      end
+
+      service.call
+    end
   end
-end
 
-class Emails
-  Test::GlobalListeners.listen(Test::CreateUser, ->welcome_email(Test::CreateUser))
+  describe "global listeners" do
+    it "calls the global listener" do
+      service = User::Create.new(18)
+      called = 0
 
-  def self.welcome_email(e : Test::CreateUser)
-    puts "Welcome email"
-  end
-end
+      User::Create::GlobalListeners.listen(
+        User::Create::Success, ->(_user : User::Create::Success) {
+          called = 1
+        }
+      )
 
-x = Test.new
-x.on(Test::CreateUser) do |user|
-  puts user
-end
-x.call
+      service.broadcast(User::Create::Failure.new(reason: "Some reason"))
+      expect(called).to eq 0
 
-describe Wisper do
-  # TODO: Write tests
-
-  it "works" do
-    true.should eq(true)
+      service.broadcast(User::Create::Success.new("Jon", 18))
+      expect(called).to eq 1
+    end
   end
 end
