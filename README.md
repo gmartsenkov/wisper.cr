@@ -1,6 +1,6 @@
 # wisper
 
-Minimalistic library to help decouple business concernes using Pub-Sub style. 
+Minimalistic library to help decouple business concernes using Pub-Sub approach. 
 - Subscriptions are just callbacks executed when the particular event is emitted
 - Local and global subscriptions
 - Synchronous and asynchronous subscriptions
