@@ -1,6 +1,7 @@
 # Wisper
 
-Minimalistic library to help decouple business concernes using a Pub-Sub approach. 
+Minimalistic library to help decouple business concernes using a Pub-Sub approach.  
+Inspired by Ruby's excelent library [Wisper](https://github.com/krisleech/wisper).
 - Subscriptions are just callbacks executed when the particular event is emitted
 - Local and global subscriptions
 - Synchronous and asynchronous subscriptions
