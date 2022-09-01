@@ -38,7 +38,8 @@ module Wisper
     private def log_broadcast(e : EventTypes)
       Config.logger.try do |logger|
         attributes = e.log
-        message = "Published - #{e.class.name} - #{attributes}"
+        message = "Published - #{e.class.name}"
+        message += " - #{attributes}" unless attributes.empty?
         logger.info { message }
       end
     end
@@ -83,11 +84,17 @@ module Wisper
                        end}})
       end
 
-      def log
-        [{{*properties.map do |field|
-             [field.var.stringify, "@#{field.var}".id]
-           end}}].map { |pair| pair.join(": ") }.join(", ")
-      end
+      {% if properties.size == 0 %}
+        def log
+          ""
+        end
+      {%else%}
+        def log
+          [{{*properties.map do |field|
+               [field.var.stringify, "@#{field.var}".id]
+             end}}].map { |pair| pair.join(": ") }.join(", ")
+        end
+      {%end%}
     end
   end
 end
