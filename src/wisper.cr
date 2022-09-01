@@ -1,5 +1,7 @@
 # TODO: Write documentation for `Wisper`
 
+require "./config"
+
 module Wisper
   VERSION = "0.1.0"
 
@@ -26,10 +28,20 @@ module Wisper
       end
 
       def broadcast(e : {{event}})
+        log_broadcast(e)
+
         (@subscriptions_for_{{event_name}} + GlobalListeners.subscriptions_for_{{event_name}}).each { |handler| handler.call(e) }
       end
-
     {% end %}
+
+
+    private def log_broadcast(e : EventTypes)
+      Config.logger.try do |logger|
+        attributes = e.log
+        message = "Published - #{e.class.name} - #{attributes}"
+        logger.info { message }
+      end
+    end
 
     module GlobalListeners
       {% for event in Events.all_subclasses %}
@@ -69,6 +81,12 @@ module Wisper
       def initialize({{*properties.map do |field|
                          "@#{field.id}".id
                        end}})
+      end
+
+      def log
+        [{{*properties.map do |field|
+             [field.var.stringify, "@#{field.var}".id]
+           end}}].map { |pair| pair.join(": ") }.join(", ")
       end
     end
   end

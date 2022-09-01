@@ -1,9 +1,10 @@
-# wisper
+# Wisper
 
-Minimalistic library to help decouple business concernes using Pub-Sub approach. 
+Minimalistic library to help decouple business concernes using a Pub-Sub approach. 
 - Subscriptions are just callbacks executed when the particular event is emitted
 - Local and global subscriptions
 - Synchronous and asynchronous subscriptions
+- Logging
 
 ## Installation
 
@@ -94,6 +95,16 @@ User::Create.new(age: 18)
   .on(User::Create::Success) { |success| puts success.name }
   .on(User::Create::Failure) { |failure| puts failure.reason }
   .call
+```
+
+## Logging
+
+``` crystal
+require "wisper"
+# default
+Wisper::Config.logger = Log.for("Wisper")
+# To disable set to nil
+Wisper::Config.logger = nil
 ```
 
 ## Contributing

@@ -19,10 +19,3 @@ class User::Create
     broadcast(Failure.new(reason: "Underaged"))
   end
 end
-
-User::Create::GlobalListeners
-  .listen(User::Create::Success, ->(x : User::Create::Success) { puts "async global" })
-
-User::Create.new(20)
-  .on(User::Create::Success) { |s| puts s.inspect }
-  .call
