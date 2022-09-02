@@ -108,6 +108,29 @@ Wisper::Config.logger = Log.for("Wisper")
 Wisper::Config.logger = nil
 ```
 
+## Testing
+Enable broadcast history in the spec helper, so that broadcasted events are recorded and accessible in `#broadcasted`
+``` crystal
+Wisper::Config.broadcast_history = true
+```
+Example on testing with `Specter`
+
+``` crystal
+it "calls the correct subscription" do
+  service = User::Create.new(17)
+
+  service.on(User::Create::Failure) do |failure|
+    expect(failure.reason).to eq "teast"
+  end
+
+  service.call
+  expect(service.broadcasted).to have User::Create::Failure
+  # expect(service.broadcasted).to eq [User::Create::Failure.new(...)]
+end
+```
+
+
+
 ## Contributing
 
 1. Fork it (<https://github.com/gmartsenkov/wisper/fork>)

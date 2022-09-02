@@ -11,6 +11,8 @@ module Wisper
   macro finished
     alias EventTypes = {{ Events.all_subclasses.join(" | ").id }}
 
+    @broadcasted = Array(EventTypes).new
+
     {% for event in Events.all_subclasses %}
       {% event_name = event.stringify.underscore.gsub(/::/, "_").id %}
 
@@ -29,11 +31,14 @@ module Wisper
 
       def broadcast(e : {{event}})
         log_broadcast(e)
-
+        @broadcasted << e if Config.broadcast_history
         (@subscriptions_for_{{event_name}} + GlobalListeners.subscriptions_for_{{event_name}}).each { |handler| handler.call(e) }
       end
     {% end %}
 
+    def broadcasted
+      @broadcasted
+    end
 
     private def log_broadcast(e : EventTypes)
       Config.logger.try do |logger|
@@ -88,13 +93,13 @@ module Wisper
         def log
           ""
         end
-      {%else%}
+      {% else %}
         def log
           [{{*properties.map do |field|
                [field.var.stringify, "@#{field.var}".id]
              end}}].map { |pair| pair.join(": ") }.join(", ")
         end
-      {%end%}
+      {% end %}
     end
   end
 end
