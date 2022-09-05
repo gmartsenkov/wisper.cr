@@ -3,7 +3,7 @@
 require "./publisher"
 
 module Wisper
-  VERSION = "1.0.3"
+  VERSION = {{ `shards version "#{__DIR__}"`.stringify.chomp }}
 
   class Events
   end
