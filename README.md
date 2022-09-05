@@ -24,7 +24,7 @@ Inspired by Ruby's excelent library [Wisper](https://github.com/krisleech/wisper
 To use Wisper simply include it in your class. Since crystal is strictly typed language we'll have to define the possible events that can be broadcasted using the `event` macro which just creates a simple class with the defined properties. 
 ```crystal
 class User::Create
-  include Wisper
+  include Wisper::Publisher
 
   event Success, name : String, age : Int32
   event Failure, reason : String
@@ -67,13 +67,12 @@ Also can be run in asynchronously -
 ``` crystal
 User::Create::GlobalListeners.listen(User::Create::Success, ->welcome_email(User::Create::Success, async: true))
 ```
-
 NOTE: The local subscription callbacks are executed before the global ones.
 
 Full example -
 ``` crystal
 class User::Create
-  include Wisper
+  include Wisper::Publisher
 
   event Success, name : String, age : Int32
   event Failure, reason : String
@@ -97,15 +96,26 @@ User::Create.new(age: 18)
   .on(User::Create::Failure) { |failure| puts failure.reason }
   .call
 ```
+## Global subscriptions
+A global subscription is just a `Proc` that is executed when any event is broadcasted from any class or instance. This is usefull for logging, building usage statistics, etc...
+
+Example of how the default wisper logger is implement using a global subscription
+``` crystal
+logger = ->(event : Wisper::EventTypes) do
+  attributes = event.attributes
+  message = "Published - #{event.class.name}"
+  message += " - #{attributes}" unless attributes.empty?
+  Log.for("Wisper").info { message }
+end
+
+Wisper.listen(logger)
+```
 
 ## Logging
-
+We can use a global listener to log every broadcasted event. There is a default logger that can be used like this ->
 ``` crystal
 require "wisper"
-# default
-Wisper::Config.logger = Log.for("Wisper")
-# To disable set to nil
-Wisper::Config.logger = nil
+Wisper.listen(->Wisper.default_logger(Wisper::EventTypes))
 ```
 
 ## Testing

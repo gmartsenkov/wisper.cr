@@ -4,7 +4,6 @@ module Wisper
   module Config
     extend self
 
-    @@logger : Log? = Log.for("Wisper")
     @@broadcast_history : Bool = false
 
     def broadcast_history=(bool)

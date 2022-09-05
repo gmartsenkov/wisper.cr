@@ -1,7 +1,7 @@
 require "../../src/wisper"
 
 class User::Create
-  include Wisper
+  include Wisper::Publisher
 
   event Success, name : String, age : Int32
   event Failure, reason : String
