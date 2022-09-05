@@ -4,13 +4,18 @@ require "./config"
 require "./publisher"
 
 module Wisper
-  VERSION = "1.0.1"
+  VERSION = "1.0.2"
 
   class Events
   end
 
   macro finished
-    alias EventTypes = {{ Wisper::Events.all_subclasses.reject { |k| k.stringify == "Wisper::Publisher::Events" }.join(" | ").id }}
+    {% events = Wisper::Events.all_subclasses.reject { |k| k.stringify == "Wisper::Publisher::Events" } %}
+    {% if events.size > 0 %}
+      alias EventTypes = {{ Wisper::Events.all_subclasses.reject { |k| k.stringify == "Wisper::Publisher::Events" }.join(" | ").id }}
+    {% else %}
+      alias EventTypes = Nil
+    {% end %}
 
     @@global_subs = Array(Proc(Wisper::EventTypes, Nil)).new
 
@@ -20,10 +25,6 @@ module Wisper
 
     def self.listen(handler : Proc(Wisper::EventTypes, Nil))
       @@global_subs << handler
-    end
-
-    def self.types
-      {{ Wisper::Events.all_subclasses.reject { |k| k.stringify == "Wisper::Publisher::Events" } }}
     end
   end
 

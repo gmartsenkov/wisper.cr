@@ -6,7 +6,12 @@ module Wisper::Publisher
   end
 
   macro finished
-    alias EventTypes = {{ Events.all_subclasses.join(" | ").id }}
+    {% event_classes = Events.all_subclasses %}
+    {% if event_classes.size > 0 %}
+        alias EventTypes = {{ event_classes.join(" | ").id }}
+    {% else %}
+        alias EventTypes = Nil
+    {% end %}
 
     @broadcasted = Array(EventTypes).new
 
