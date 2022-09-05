@@ -1,7 +1,5 @@
 # TODO: Write documentation for `Wisper`
 
-require "./publisher"
-
 module Wisper
   VERSION = {{ `shards version "#{__DIR__}"`.stringify.chomp }}
 
@@ -58,3 +56,5 @@ module Wisper
     Log.for("Wisper").info { message }
   end
 end
+
+require "./publisher"
