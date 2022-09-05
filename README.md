@@ -111,6 +111,28 @@ end
 Wisper.listen(logger)
 ```
 
+## Temporary subscriptions
+This is like a global subscription but is only active until the block executes.
+The test helper `capture_events` uses a temporary subscription to capture and return broadcasted events
+``` crystal
+def capture_events(&block)
+  events = Array(Wisper::EventTypes).new
+
+  handler = ->(event : Wisper::EventTypes) do
+    events << event
+  end
+
+  Wisper.listen(handler) do
+    yield
+  end
+
+  events
+end
+
+puts capture_events { User::Create.new(age: 10) }
+# [#<User::Create::Failure:0x1022d9b20 @reason="Underaged">]
+```
+
 ## Logging
 We can use a global listener to log every broadcasted event. There is a default logger that can be used like this ->
 ``` crystal
@@ -119,13 +141,11 @@ Wisper.listen(->Wisper.default_logger(Wisper::EventTypes))
 ```
 
 ## Testing
-Enable broadcast history in the spec helper, so that broadcasted events are recorded and accessible in `#broadcasted`
-``` crystal
-Wisper::Config.broadcast_history = true
-```
+There is a helper method in `wisper/test` called `#capture_events` that takes a block and returns the broadcasted events in that block.
 Example on testing with `Specter`
-
 ``` crystal
+require "wisper/test"
+
 it "calls the correct subscription" do
   service = User::Create.new(17)
 
@@ -133,13 +153,22 @@ it "calls the correct subscription" do
     expect(failure.reason).to eq "teast"
   end
 
-  service.call
-  expect(service.broadcasted).to have User::Create::Failure
-  # expect(service.broadcasted).to eq [User::Create::Failure.new(...)]
+  events = capture_events { service.call }
+  expect(events).to have User::Create::Failure
 end
 ```
+**WIP** Working on a custom spectator matcher to streamline testing. It would look something like this -
 
+``` crystal
+  service = User::Create.new(17)
 
+  service.on(User::Create::Failure) do |failure|
+    expect(failure.reason).to eq "teast"
+  end
+
+  expect { service.call }.to broadcast User::Create::Failure
+  # expect { service.call }.to broadcast User::Create::Failure.new(...)
+```
 
 ## Contributing
 

@@ -1,10 +1,9 @@
 # TODO: Write documentation for `Wisper`
 
-require "./config"
 require "./publisher"
 
 module Wisper
-  VERSION = "1.0.2"
+  VERSION = "1.0.3"
 
   class Events
   end
@@ -18,13 +17,37 @@ module Wisper
     {% end %}
 
     @@global_subs = Array(Proc(Wisper::EventTypes, Nil)).new
+    @@temporary_subs = Array(Proc(Wisper::EventTypes, Nil)).new
+    @@mutex = Mutex.new
 
     def self.subscriptions
       @@global_subs
     end
 
+    def self.temporary_subscriptions
+      subs = Array(Proc(Wisper::EventTypes, Nil)).new
+      @@mutex.synchronize do
+        subs = @@temporary_subs
+      end
+
+      subs
+    end
+
     def self.listen(handler : Proc(Wisper::EventTypes, Nil))
       @@global_subs << handler
+    end
+
+    def self.listen(handler : Proc(Wisper::EventTypes, Nil), &block)
+      begin
+        @@mutex.synchronize do
+          @@temporary_subs << handler
+        end
+        yield
+      ensure
+        @@mutex.synchronize do
+          @@temporary_subs.delete(handler)
+        end
+      end
     end
   end
 

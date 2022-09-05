@@ -9,8 +9,8 @@ Spectator.describe Wisper do
         expect(failure.reason).to eq "Underaged"
       end
 
-      service.call
-      expect(service.broadcasted).to have User::Create::Failure
+      events = capture_events { service.call }
+      expect(events).to have User::Create::Failure
     end
 
     it "works for another event" do
@@ -21,8 +21,8 @@ Spectator.describe Wisper do
         expect(success.name).to eq "Jon"
       end
 
-      service.call
-      expect(service.broadcasted).to have User::Create::Success
+      events = capture_events { service.call }
+      expect(events).to have User::Create::Success
     end
   end
 
@@ -37,12 +37,16 @@ Spectator.describe Wisper do
       }
       )
 
-      service.broadcast(User::Create::Failure.new(reason: "Some reason"))
-      expect(service.broadcasted).to have User::Create::Failure
+      events = capture_events do
+        service.broadcast(User::Create::Failure.new(reason: "Some reason"))
+      end
+      expect(events).to have User::Create::Failure
       expect(called).to eq 0
 
-      service.broadcast(User::Create::Success.new("Jon", 18))
-      expect(service.broadcasted).to have User::Create::Success
+      events = capture_events do
+        service.broadcast(User::Create::Success.new("Jon", 18))
+      end
+      expect(events).to have User::Create::Success
       expect(called).to eq 1
     end
   end

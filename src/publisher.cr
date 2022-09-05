@@ -13,8 +13,6 @@ module Wisper::Publisher
         alias EventTypes = Nil
     {% end %}
 
-    @broadcasted = Array(EventTypes).new
-
     {% for event in Events.all_subclasses %}
       {% event_name = event.stringify.underscore.gsub(/::/, "_").id %}
 
@@ -32,18 +30,14 @@ module Wisper::Publisher
       end
 
       def broadcast(e : {{event}})
-        @broadcasted << e if Config.broadcast_history
         (
           @subscriptions_for_{{event_name}} +
           GlobalListeners.subscriptions_for_{{event_name}} +
+          Wisper.temporary_subscriptions +
           Wisper.subscriptions
         ).each { |handler| handler.call(e) }
       end
     {% end %}
-
-    def broadcasted
-      @broadcasted
-    end
 
     module GlobalListeners
       {% for event in Events.all_subclasses %}
