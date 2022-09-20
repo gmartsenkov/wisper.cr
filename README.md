@@ -129,7 +129,7 @@ def capture_events(&block)
   events
 end
 
-puts capture_events { User::Create.new(age: 10) }
+puts capture_events { User::Create.new(age: 10).call }
 # [#<User::Create::Failure:0x1022d9b20 @reason="Underaged">]
 ```
 
@@ -157,17 +157,23 @@ it "calls the correct subscription" do
   expect(events).to have User::Create::Failure
 end
 ```
-**WIP** Working on a custom spectator matcher to streamline testing. It would look something like this -
-
+### Spectator
+Handy spectator matchers to easily test an event has been broadcasted - https://github.com/gmartsenkov/wisper-spectator
 ``` crystal
-  service = User::Create.new(17)
+require "wisper-spectator"
 
-  service.on(User::Create::Failure) do |failure|
-    expect(failure.reason).to eq "teast"
+Spectator.describe "User::Create" do
+  subject { User::Create.new(15) }
+
+  describe "#broadcast" do
+    it "works with a passed event class" do
+      subject.on(User::Create::Failure) do |failure|
+        expect(failure.reason).to eq "Some reason"
+      end
+      expect { subject.call }.to broadcast(User::Create::Failure)
+    end
   end
-
-  expect { service.call }.to broadcast User::Create::Failure
-  # expect { service.call }.to broadcast User::Create::Failure.new(...)
+end
 ```
 
 ## Contributing
