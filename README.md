@@ -65,7 +65,7 @@ class Emails
 ```
 Also can be run in asynchronously -
 ``` crystal
-User::Create::GlobalListeners.listen(User::Create::Success, ->welcome_email(User::Create::Success, async: true))
+User::Create::GlobalListeners.listen(User::Create::Success, ->welcome_email(User::Create::Success) async: true)
 ```
 NOTE: The local subscription callbacks are executed before the global ones.
 
